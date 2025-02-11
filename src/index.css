@@ -1,4 +1,12 @@
 @import "tailwindcss";
+@plugin "daisyui";
+
+
+
 body {
-   background: linear-gradient(to bottom right, #4c1d95, #1e40af, #000000);
+   background: 
+      url('/rrrainbow.svg') no-repeat center center, /* SVG Image */
+      linear-gradient(to bottom right, #4c1d95, #1e40af, #000000); /* Gradient */
+   background-size:cover, cover; 
+   
 }

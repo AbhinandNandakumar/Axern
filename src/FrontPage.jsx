@@ -1,20 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { Send, Sparkles, Loader2 } from 'lucide-react';
+import { Send, Sparkles, Loader2, History, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { saveChat, getChatHistory } from './firebase';
+import DecryptedText from './components/DecryptedText';
+import { auth } from './firebase';
+
+
 
 const FrontPage = () => {
   const [input, setInput] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [chatHistory, setChatHistory] = useState([]);
 
   useEffect(() => {
-    console.log(input);
-  }, [input]);
+    if (showHistory) {
+      loadChatHistory();
+    }
+  }, [showHistory]);
+
+  const loadChatHistory = async () => {
+    try {
+      const history = await getChatHistory();
+      setChatHistory(history);
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!input.trim()) return;
     setLoading(true);
     setResponse('');
+    let fullResponse = '';
 
     try {
       const response = await fetch('http://localhost:5000/api/chat', {
@@ -30,9 +58,13 @@ const FrontPage = () => {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value);
+        fullResponse += chunk;
         setResponse((prev) => prev + chunk);
-        setInput("");
       }
+
+      // Save to Firebase after complete response
+      await saveChat(input, fullResponse);
+      setInput("");
     } catch (error) {
       console.error('Error:', error);
       setResponse('Error occurred');
@@ -49,43 +81,57 @@ const FrontPage = () => {
   };
 
   return (
-    <div className="min-h-screen text-white">
-      <div className="container mx-auto p-4 md:p-8 flex flex-col min-h-screen">
-        <header className="text-center mb-8 md:mb-12">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Sparkles className="w-8 h-8 text-yellow-400" />
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">Axern AI</h1>
+    <div className="min-h-screen pt-20 text-white relative">
+      <button
+        onClick={handleLogout}
+        className="fixed top-20 z-30 right-4 bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded transition-colors"
+      >
+        Logout
+      </button>
+      <div className="container mx-auto px-4 py-8">
+        <header className="text-center mb-8 mt-3">
+          <div>
+          <DecryptedText
+            text="The powerful prompt generator"
+            animateOn="view"
+            speed={100}
+            maxIterations={20}
+            revealDirection="start"
+            className='text-gray-300 text-xl text-bold '
+            encryptedClassName='text-gray-300'
+            sequential = {true}
+          />
           </div>
-          <p className="text-sm md:text-base text-gray-300">The powerful prompt generator</p>
         </header>
 
-        <main className="flex-grow flex flex-col gap-6 max-w-3xl mx-auto w-full">
-          <div className="bg-gray-800/50 backdrop-blur-md rounded-xl p-4 md:p-6 shadow-xl">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="What's on your mind?"
-              className="w-full h-24 md:h-32 bg-gray-600/50 text-white rounded-lg p-3 md:p-4 
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            />
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={handleSubmit}
-                disabled={loading || !input.trim()}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 
-                       text-white rounded-lg py-2 px-2 md:px-4 flex items-center gap-2 
-                       transition-all transform hover:scale-[1.02]"
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-                
-              </button>
-            </div>
+        <main className="max-w-3xl mx-auto space-y-8">
+        <div>
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="What's on your mind?"
+            className="w-full h-24 md:h-32 bg-gray-800/55 backdrop-blur-sm text-white rounded-lg p-3 md:p-4 
+                      focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          />
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={handleSubmit}
+              disabled={loading || !input.trim()}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:text-gray-300
+                        text-white rounded-lg py-2 px-2 md:px-4 flex items-center gap-2 
+                        transition-all transform hover:scale-[1.02] w-1/3 justify-center"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <div className=''>Generate</div>}
+              
+            </button>
           </div>
+        </div>
 
-          {response && (
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 md:p-6 shadow-xl 
-                          transform transition-all duration-300 ease-in-out">
+
+
+          {response ? (
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 md:p-6 shadow-xl">
               <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-yellow-400" />
                 Response
@@ -96,8 +142,66 @@ const FrontPage = () => {
                 </div>
               </div>
             </div>
-          )}
+          ) : 
+          <div className="flex flex-wrap justify-center gap-6 text-sm text-white">
+  <div className="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 p-4 bg-gray-900/50 backdrop-blur-sm rounded-lg shadow-md">
+    <h3 className="font-bold text-lg text-blue-400">Instant Prompt Generation</h3>
+    <p className="mt-1">Generate creative prompts with a single click.</p>
+  </div>
+  
+  <div className="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 p-4 bg-gray-900/50 backdrop-blur-sm rounded-lg shadow-md">
+    <h3 className="font-bold text-lg text-blue-400">AI-Powered Suggestions</h3>
+    <p className="mt-1">Tailored prompts generated by advanced AI technology.</p>
+  </div>
+
+  <div className="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 p-4 bg-gray-900/50 backdrop-blur-sm rounded-lg shadow-md">
+    <h3 className="font-bold text-lg text-blue-400">Fast Response Time</h3>
+    <p className="mt-1">Receive prompt suggestions in real-time.</p>
+  </div>
+</div>
+
+
+          }
         </main>
+
+        {/* History Button */}
+        <button
+          onClick={() => setShowHistory(!showHistory)}
+          className="fixed bottom-6 left-6 bg-blue-600 hover:bg-blue-700 
+                   text-white rounded-full p-3 shadow-lg transition-all 
+                   transform hover:scale-[1.05]"
+        >
+          <History className="w-6 h-6" />
+        </button>
+
+        {/* History Panel */}
+        {showHistory && (
+          <div className="fixed left-0 bottom-0 w-80 h-[80vh] bg-gray-800 shadow-xl 
+                        transform transition-all duration-300 rounded-tr-xl overflow-hidden">
+            <div className="p-4 bg-gray-700 flex justify-between items-center">
+              <h3 className="font-semibold">Chat History</h3>
+              <button
+                onClick={() => setShowHistory(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4 overflow-y-auto h-[calc(80vh-4rem)]">
+              {chatHistory.map((chat) => (
+                <div key={chat.id} className="bg-gray-700/50 rounded-lg p-3 space-y-2">
+                  <div className="text-sm text-gray-400">
+                    {new Date(chat.timestamp).toLocaleString()}
+                  </div>
+                  <div className="text-sm font-medium">Input: {chat.input}</div>
+                  <div className="text-sm text-gray-300">
+                    Response: <ReactMarkdown>{chat.response}</ReactMarkdown>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
