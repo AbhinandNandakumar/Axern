@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Send, Sparkles, Loader2, History, X,Trash2 } from 'lucide-react';
+import { Sparkles, Loader2, History, X,Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { saveChat, getChatHistory,deleteChat } from './firebase';
+import { useNavigate } from 'react-router-dom';
 import DecryptedText from './components/DecryptedText';
 import { auth } from './firebase';
 
@@ -14,25 +14,53 @@ const FrontPage = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (showHistory) {
       loadChatHistory();
     }
   }, [showHistory]);
 
-  const loadChatHistory = async () => {
-    try {
-      const history = await getChatHistory();
-      setChatHistory(history);
-    } catch (error) {
-      console.error('Error loading chat history:', error);
+  const getAuthToken = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      return await user.getIdToken();
     }
+    throw new Error('No user logged in');
   };
 
-  const handleDeleteChat = async (chatId) => {
-    await deleteChat(chatId);
-    setChatHistory(chatHistory.filter(chat => chat.id !== chatId)); // Update UI
-  };
+  // Update loadChatHistory
+const loadChatHistory = async () => {
+  try {
+    const token = await getAuthToken();
+    const response = await fetch('http://localhost:5000/api/chat-history', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const history = await response.json();
+    setChatHistory(history);
+  } catch (error) {
+    console.error('Error loading chat history:', error);
+  }
+};
+
+  // Update handleDeleteChat
+const handleDeleteChat = async (chatId) => {
+  try {
+    const token = await getAuthToken();
+    await fetch(`http://localhost:5000/api/chat/${chatId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    setChatHistory(chatHistory.filter(chat => chat.id !== chatId));
+  } catch (error) {
+    console.error('Error deleting chat:', error);
+  }
+};
 
   const handleLogout = async () => {
     try {
@@ -48,17 +76,21 @@ const FrontPage = () => {
     setLoading(true);
     setResponse('');
     let fullResponse = '';
-
+  
     try {
+      const token = await getAuthToken();
       const response = await fetch('http://localhost:5000/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ userInput: input })
       });
-
+  
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-
+  
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -66,10 +98,9 @@ const FrontPage = () => {
         fullResponse += chunk;
         setResponse((prev) => prev + chunk);
       }
-
-      // Save to Firebase after complete response
-      await saveChat(input, fullResponse);
+  
       setInput("");
+      // No need to manually save to Firebase anymore as it's handled by the backend
     } catch (error) {
       console.error('Error:', error);
       setResponse('Error occurred');
