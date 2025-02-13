@@ -6,6 +6,7 @@ import {
   setDoc, 
   query, 
   getDocs,
+  deleteDoc,
   orderBy
 } from 'firebase/firestore';
 import {
@@ -82,6 +83,24 @@ export const getChatHistory = async () => {
     return [];
   }
 };
+
+export const deleteChat = async (chatId) => {
+  const user = auth.currentUser;
+  if (!user) {
+    console.error('User not logged in!');
+    return;
+  }
+
+  try {
+    const chatRef = doc(db, 'users', user.uid, 'chats', chatId);
+    await deleteDoc(chatRef);
+    console.log('Chat deleted successfully');
+  } catch (error) {
+    console.error('Error deleting chat:', error);
+  }
+};
+
+
 
 export {
   auth,
