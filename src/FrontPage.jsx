@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { Sparkles, Loader2, History, X,Trash2,Copy } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ const FrontPage = () => {
   const [loading, setLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
+  const historyRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -29,6 +30,24 @@ const FrontPage = () => {
     }
     throw new Error('No user logged in');
   };
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (historyRef.current && !historyRef.current.contains(event.target)) {
+        setShowHistory(false);
+      }
+    }
+
+    if (showHistory) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showHistory]);
 
   // Update loadChatHistory
 const loadChatHistory = async () => {
@@ -232,8 +251,9 @@ const handleDeleteChat = async (chatId) => {
 
         {/* History Panel */}
         {showHistory && (
-          <div className="fixed left-0 bottom-0 w-80 h-[80vh] bg-blue-950/80 shadow-xl 
-                        transform transition-all duration-300 rounded-tr-xl overflow-hidden">
+          <div ref={historyRef} className="fixed left-1/2 bottom-0 w-70 h-[55vh] bg-blue-950/80 shadow-xl 
+          transform -translate-x-1/2 transition-all duration-300 
+          rounded-t-xl overflow-hidden sm:w-1/2">
             <div className="p-4 bg-gray-800/60 flex justify-between items-center ">
               <h3 className="font-semibold text-gray-300">Chat History</h3>
               <button
@@ -255,9 +275,19 @@ const handleDeleteChat = async (chatId) => {
     <div className="text-sm text-gray-400">
       {new Date(chat.timestamp).toLocaleString()}
     </div>
-    <div className="text-sm font-medium">Input: {chat.input}</div>
+    <div className="text-md font-medium">You: {chat.input}</div>
     <div className="text-sm text-gray-300">
-      Response: <ReactMarkdown>{chat.response}</ReactMarkdown>
+    <span>Axern: <ReactMarkdown>{chat.response}</ReactMarkdown></span>
+          
+          {/* Copy Button */}
+          <button 
+            onClick={() => navigator.clipboard.writeText(chat.response)}
+            className=" p-1 rounded-lg hover:bg-blue-100/20 
+                        active:bg-blue-100/30 tooltip tooltip-right mt-2"
+            data-tip="Copy"
+          >
+            <Copy />
+          </button>
     </div>
   </div>
 ))}
