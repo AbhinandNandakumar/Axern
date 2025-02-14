@@ -34,7 +34,7 @@ const FrontPage = () => {
 const loadChatHistory = async () => {
   try {
     const token = await getAuthToken();
-    const response = await fetch('http://localhost:5000/api/chat-history', {
+    const response = await fetch('https://axern.onrender.com/api/chat-history', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -50,7 +50,7 @@ const loadChatHistory = async () => {
 const handleDeleteChat = async (chatId) => {
   try {
     const token = await getAuthToken();
-    await fetch(`http://localhost:5000/api/chat/${chatId}`, {
+    await fetch(`https://axern.onrender.com/api/chat/${chatId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -79,7 +79,7 @@ const handleDeleteChat = async (chatId) => {
   
     try {
       const token = await getAuthToken();
-      const response = await fetch('http://localhost:5000/api/chat', {
+      const response = await fetch('https://axern.onrender.com/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
