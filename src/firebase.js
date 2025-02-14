@@ -8,7 +8,6 @@ import {
   sendEmailVerification
 } from 'firebase/auth';
 
-console.log("Env Variables:", import.meta.env);
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,

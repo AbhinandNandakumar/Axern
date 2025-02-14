@@ -3,7 +3,6 @@ import GradientText from './GradientText'
 import { User } from 'lucide-react';
 
 const Navbar = ({user}) => {
-  console.log(user.photoURL);
 
   return (
     <div>
