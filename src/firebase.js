@@ -8,13 +8,15 @@ import {
   sendEmailVerification
 } from 'firebase/auth';
 
+console.log("Env Variables:", import.meta.env);
+
 const firebaseConfig = {
-  apiKey: "AIzaSyD0y6vA8LjstecMMLShl2Q8iFTpiL2vSLg",
-  authDomain: "axern-ai.firebaseapp.com",
-  projectId: "axern-ai",
-  storageBucket: "axern-ai.firebasestorage.app",
-  messagingSenderId: "139002332171",
-  appId: "1:139002332171:web:38b77078ef2d2063f6b30e"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase

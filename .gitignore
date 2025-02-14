@@ -11,7 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
-src\.env
+.env
 backend/.env
 backend\axern-ai-firebase-adminsdk-fbsvc-79d3569a20.json
 

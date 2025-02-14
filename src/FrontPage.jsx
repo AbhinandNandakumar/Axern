@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Loader2, History, X,Trash2 } from 'lucide-react';
+import { Sparkles, Loader2, History, X,Trash2,Copy } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
 import DecryptedText from './components/DecryptedText';
@@ -108,6 +108,16 @@ const handleDeleteChat = async (chatId) => {
       setLoading(false);
     }
   };
+  const handleCopy = () => {
+    try{
+      navigator.clipboard.writeText(response);
+    setCopied(true);
+    }
+    catch (error) {
+      console.error('Failed to copy:', error);
+    }
+    
+  }
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -168,10 +178,18 @@ const handleDeleteChat = async (chatId) => {
 
         {response ? (
   <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 md:p-6 shadow-xl">
+    <div className='flex justify-between items-center'>
     <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
       <Sparkles className="w-5 h-5 text-yellow-400" />
       Response
     </h2>
+    
+    <button className='text-yellow-500 mb-3 rounded-lg p-1 tooltip tooltip-left hover:bg-blue-100/20 hover:text-yellow-300 active:bg-blue-100/30 active:text-yellow-500' data-tip="copy" onClick={handleCopy}><Copy/>
+    </button>
+    
+    
+    </div>
+    
     <div className="bg-gray-700/50 rounded-lg p-4">
       <div className="whitespace-pre-wrap text-sm md:text-base">
         <ReactMarkdown>{response}</ReactMarkdown>

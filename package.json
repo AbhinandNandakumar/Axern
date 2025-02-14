@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-spring/web": "^9.7.5",
     "@tailwindcss/vite": "^4.0.4",
+    "dotenv": "^16.4.7",
     "firebase": "^11.3.0",
     "framer-motion": "^12.4.2",
     "lucide-react": "^0.475.0",
