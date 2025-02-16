@@ -14,6 +14,7 @@ const FrontPage = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
   const historyRef = useRef(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -49,23 +50,25 @@ const FrontPage = () => {
     };
   }, [showHistory]);
 
-  // Update loadChatHistory
-const loadChatHistory = async () => {
-  try {
-    const token = await getAuthToken();
-    const response = await fetch('https://axern.onrender.com/api/chat-history', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    const history = await response.json();
-    setChatHistory(history);
-  } catch (error) {
-    console.error('Error loading chat history:', error);
-  }
-};
 
-  // Update handleDeleteChat
+  const loadChatHistory = async () => {
+    try {
+      setHistoryLoading(true); 
+      const token = await getAuthToken();
+      const response = await fetch('https://axern.onrender.com/api/chat-history', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const history = await response.json();
+      setChatHistory(history);
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    } finally {
+      setHistoryLoading(false); 
+    }
+  };
+
 const handleDeleteChat = async (chatId) => {
   try {
     const token = await getAuthToken();
@@ -251,50 +254,46 @@ const handleDeleteChat = async (chatId) => {
 
         {/* History Panel */}
         {showHistory && (
-          <div ref={historyRef} className="fixed left-1/2 bottom-0 w-70 h-[55vh] bg-blue-950/80 shadow-xl 
-          transform -translate-x-1/2 transition-all duration-300 
-          rounded-t-xl overflow-hidden sm:w-1/2">
-            <div className="p-4 bg-gray-800/60 flex justify-between items-center ">
-              <h3 className="font-semibold text-gray-300">Chat History</h3>
-              <button
-                onClick={() => setShowHistory(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
+  <div ref={historyRef} className="fixed left-1/2 bottom-0 w-70 h-[55vh] bg-blue-950/80 shadow-xl 
+      transform -translate-x-1/2 transition-all duration-300 
+      rounded-t-xl overflow-hidden sm:w-1/2">
+    <div className="p-4 bg-gray-800/60 flex justify-between items-center">
+      <h3 className="font-semibold text-gray-300">Chat History</h3>
+      <button onClick={() => setShowHistory(false)} className="text-gray-400 hover:text-white">
+        <X className="w-5 h-5" />
+      </button>
+    </div>
+
+    <div className="p-4 space-y-4 overflow-y-auto h-[calc(80vh-4rem)]">
+      {historyLoading ? (
+        <div className="flex justify-center items-center h-full">
+          <Loader2 className="w-6 h-6 text-white animate-spin" />
+        </div>
+      ) : (
+        chatHistory.map((chat) => (
+          <div key={chat.id} className="bg-blue-900/80 rounded-lg p-3 space-y-2 relative">
+            <button onClick={() => handleDeleteChat(chat.id)} className="absolute top-2 right-2 text-gray-400 hover:text-red-500">
+              <Trash2 className="w-5 h-5" />
+            </button>
+            <div className="text-sm text-gray-400">{new Date(chat.timestamp).toLocaleString()}</div>
+            <div className="text-md font-medium">You: {chat.input}</div>
+            <div className="text-sm text-gray-300">
+              <span>Axern: <ReactMarkdown>{chat.response}</ReactMarkdown></span>
+              <button onClick={() => navigator.clipboard.writeText(chat.response)}
+                className="p-1 rounded-lg hover:bg-blue-100/20 active:bg-blue-100/30 tooltip tooltip-right mt-2"
+                data-tip="Copy">
+                <Copy />
               </button>
             </div>
-            <div className="p-4 space-y-4 overflow-y-auto h-[calc(80vh-4rem)]">
-            {chatHistory.map((chat) => (
-  <div key={chat.id} className="bg-blue-900/80 rounded-lg p-3 space-y-2 relative">
-    <button
-      onClick={() => handleDeleteChat(chat.id)}
-      className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
-    >
-      <Trash2 className="w-5 h-5" />
-    </button>
-    <div className="text-sm text-gray-400">
-      {new Date(chat.timestamp).toLocaleString()}
-    </div>
-    <div className="text-md font-medium">You: {chat.input}</div>
-    <div className="text-sm text-gray-300">
-    <span>Axern: <ReactMarkdown>{chat.response}</ReactMarkdown></span>
-          
-          {/* Copy Button */}
-          <button 
-            onClick={() => navigator.clipboard.writeText(chat.response)}
-            className=" p-1 rounded-lg hover:bg-blue-100/20 
-                        active:bg-blue-100/30 tooltip tooltip-right mt-2"
-            data-tip="Copy"
-          >
-            <Copy />
-          </button>
+          </div>
+        ))
+      )}
     </div>
   </div>
-))}
-            </div>
-          </div>
-        )}
+)}
       </div>
+      <div className='absolute bottom-2 right-2 text-2xl text-right mr-2 w-32 '>
+        <img src="/axernlogo.png"></img></div>
     </div>
   );
 };
