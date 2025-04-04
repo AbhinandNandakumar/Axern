@@ -136,6 +136,11 @@ async function saveChatToFirebase(userId, input, response) {
   });
 }
 
+app.get("/keep-alive", (req, res) => {
+  res.json({ status: "Server is alive" });
+});
+
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

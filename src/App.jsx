@@ -10,6 +10,13 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const keepAlive = () => {
+    fetch("https://axern.onrender.com/keep-alive")
+      .then((res) => res.json())
+      .then((data) => console.log("Keep alive response:", data))
+      .catch((err) => console.error("Keep alive error:", err));
+  };
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
@@ -17,6 +24,11 @@ function App() {
     });
 
     return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(keepAlive, 2 * 60 * 1000); // Every 2 minutes
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
