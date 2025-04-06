@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { auth } from './firebase';
 import { useEffect, useState } from 'react';
-import FrontPage from './FrontPage';
+import FrontPage, { ThemeProvider } from "./FrontPage";
 import SignIn from './Signin';
 import Login from './Login';
 import Navbar from './components/Navbar';
@@ -36,6 +36,7 @@ function App() {
   }
 
   return (
+    <ThemeProvider>
     <Router>
       <Routes>
         <Route 
@@ -52,6 +53,7 @@ function App() {
 />
       </Routes>
     </Router>
+    </ThemeProvider>
   );
 }
 
