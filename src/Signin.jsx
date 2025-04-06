@@ -7,7 +7,7 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification
 } from './firebase';
-// import google from './images/google.png';
+
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -25,7 +25,6 @@ const SignIn = () => {
       // Send verification email
       await sendEmailVerification(user);
   
-      console.log('New User Created:', user);
       alert(`Account created successfully! A verification email has been sent to ${user.email}. Please verify your email before logging in.`);
       setEmail('');
       setPassword('');
@@ -49,7 +48,6 @@ const SignIn = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      console.log('User:', user);
       alert(`Welcome ${user.displayName}`);
       setProfilePic(user.photoURL);
     } catch (error) {
@@ -60,20 +58,18 @@ const SignIn = () => {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Company branding sidebar */}
       <div className="hidden lg:flex lg:flex-col lg:w-1/2 bg-blue-700 text-white justify-center items-center p-12">
         <div className="max-w-md">
           <h1 className="text-4xl font-bold mb-6">Welcome to AXERN AI</h1>
-          <p className="text-xl mb-8">Create an account to access premium features and start your journey with us.</p>
+          <p className="text-xl mb-8">Create an account now.</p>
           <div className="bg-blue-600 p-6 rounded-lg">
             <p className="italic text-lg mb-4">"Join Axern Ai and you will get unlimited access to prompt generating"</p>
           </div>
         </div>
       </div>
       
-      {/* Form area */}
+
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-6">
-        {/* Login Button (Top Right Corner) */}
         <div className="absolute top-4 right-4">
           <button 
             onClick={() => navigate('/login')} 
@@ -83,18 +79,17 @@ const SignIn = () => {
           </button>
         </div>
 
-        {/* Company logo for mobile */}
-        <div className="lg:hidden mb-8">
-          <div className="h-12 w-12 bg-blue-700 rounded-lg flex items-center justify-center">
-            <span className="text-white text-2xl font-bold">C</span>
+        
+        <div className="lg:hidden">
+          <div className="h-20 w-48 rounded-lg flex items-center justify-center">
+          <img src="/axernlogo.png" alt="Axern" className=" w-auto" />
           </div>
         </div>
         
         <div className="w-full max-w-md">
           <h2 className="text-3xl font-bold mb-2 text-gray-800">Create Account</h2>
-          <p className="text-gray-600 mb-8">Join thousands of professionals using our platform</p>
+          <p className="text-gray-600 mb-8">Join now</p>
           
-          {/* Email/Password Sign Up Form */}
           <form onSubmit={handleEmailSignUp} className="mb-6">
             <div className="mb-5">
               <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-2">
@@ -147,7 +142,6 @@ const SignIn = () => {
             </button>
           </form>
 
-          {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
@@ -157,12 +151,11 @@ const SignIn = () => {
             </div>
           </div>
 
-          {/* Google Sign In Button */}
           <button
             onClick={handleGoogleSignIn}
             className="w-full border border-gray-300 bg-white text-gray-700 py-3 px-4 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center font-medium"
           >
-            {/* <img src={google} alt="Google icon" className="w-5 h-5 mr-3" /> */}
+            <img src="/google.png" alt="Google icon" className="w-5 h-5 mr-3" />
             <span>Sign in with Google</span>
           </button>
         </div>
