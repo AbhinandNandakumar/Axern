@@ -25,3 +25,5 @@ backend\axern-ai-firebase-adminsdk-fbsvc-79d3569a20.json
 *.njsproj
 *.sln
 *.sw?
+*.json
+backend/encoded.txt

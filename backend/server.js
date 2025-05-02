@@ -9,10 +9,15 @@ const cors = require('cors');
 
 
 // Initialize Firebase Admin
-const serviceAccount = require('./axern-ai-firebase-adminsdk-fbsvc-79d3569a20.json');
+// the older key file is not used asit bacame disabled
+const base64Key = process.env.FIREBASE_KEY_BASE64;
+const decodedKey = Buffer.from(base64Key, 'base64').toString('utf8');
+const serviceAccount = JSON.parse(decodedKey);
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
+
 
 // Middleware to parse JSON bodies (if needed)
 const db = admin.firestore();
